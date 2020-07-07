@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ import com.tiendaapp.models.entity.Cliente;
 import com.tiendaapp.models.services.ClienteService;
 import com.tiendaapp.models.services.UploadFileService;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class ClienteRestController {
@@ -58,11 +60,13 @@ public class ClienteRestController {
 	
 	@GetMapping("/clientes/page/{page}")
 	public ResponseEntity<?> indexPage(@PathVariable Integer page) {
+		Map<String, Object> response = new HashMap<>();
 		try {
-			Pageable pageable = PageRequest.of(page, 5);
+			Pageable pageable = PageRequest.of(page, 20);
 			Page<Cliente> paginator = clienteService.findAll(pageable);
 			return new ResponseEntity<Page<Cliente>>(paginator, HttpStatus.OK);
-		} catch (Exception e) {
+		} catch (DataAccessException e) {
+			response.put("error", e.getMessage().concat(": "));
 			return new ResponseEntity<Page<Cliente>>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -159,7 +163,7 @@ public class ClienteRestController {
 		
 		try {
 			Optional<Cliente> cliente = clienteService.findById(id);
-			if (cliente.isEmpty()) {
+			if (cliente.isPresent()) {
 				String nombreFotoAnterior = cliente.get().getFoto();
 				
 				uploadFileService.eliminar(nombreFotoAnterior);
@@ -167,7 +171,7 @@ public class ClienteRestController {
 				response.put("mensaje ", "El cliente ha sido eliminado con exito!");
 				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 			} else {
-				response.put("mensaje", "El cliente ha sido actualizado con exito!");
+				response.put("mensaje", "400");
 				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 			}
 		} catch (DataAccessException e) {
@@ -224,10 +228,10 @@ public class ClienteRestController {
 			e.printStackTrace();
 		}
 		//dowload
-		HttpHeaders cabecera = new HttpHeaders();
-		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");
+		/*HttpHeaders cabecera = new HttpHeaders();
+		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");*/
 		
-		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
+		return new ResponseEntity<Resource>(recurso/*, cabecera*/, HttpStatus.OK);
 		
 	}
 	

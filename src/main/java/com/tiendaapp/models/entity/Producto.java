@@ -1,7 +1,9 @@
 package com.tiendaapp.models.entity;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +15,8 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.PositiveOrZero;
+
 
 @Entity
 @Table(name = "productos")
@@ -30,9 +34,19 @@ public class Producto implements Serializable {
 	
 	private Double precio;
 	
+	private Integer cantidad;
+	
+	@PositiveOrZero
+	@Column(precision = 2, scale = 2)
+	private Double descuento;
+	
 	private String observacion;
 	
+	private String foto;
+	
 	private String estado;
+	
+	private boolean isActive;
 	
 	@Column(name = "create_at")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -45,6 +59,7 @@ public class Producto implements Serializable {
 	@PrePersist
 	public void prePersiste() {
 		this.createAt = new Date();
+		this.isActive = true;
 	}
 	
 	@PreUpdate
@@ -92,6 +107,30 @@ public class Producto implements Serializable {
 		this.observacion = observacion;
 	}
 
+	public String getFoto() {
+		return foto;
+	}
+
+	public void setFoto(String foto) {
+		this.foto = foto;
+	}
+
+	public Integer getCantidad() {
+		return cantidad;
+	}
+
+	public void setCantidad(Integer cantidad) {
+		this.cantidad = cantidad;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
 	public String getEstado() {
 		return estado;
 	}
@@ -115,8 +154,18 @@ public class Producto implements Serializable {
 	public void setUpdateAt(Date updateAt) {
 		this.updateAt = updateAt;
 	}
-	
-	
-	
+
+	public Double getDescuento() {
+		return descuento;
+	}
+
+	public void setDescuento(Double descuento) {
+		this.descuento = descuento;
+	}
+
+	public Double getPrecioFinal() {
+		String precioFinal = String.format(Locale.ROOT, "%.2f", precio-(precio*descuento/100));;
+		return Double.parseDouble(precioFinal);
+	}
 
 }

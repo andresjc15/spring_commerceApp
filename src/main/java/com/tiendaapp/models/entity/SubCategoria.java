@@ -1,10 +1,10 @@
 package com.tiendaapp.models.entity;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Locale;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,19 +13,20 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 @Entity
-@Table(name = "productos")
-public class Producto implements Serializable {
+@Table(name = "subcategorias")
+public class SubCategoria implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -33,30 +34,26 @@ public class Producto implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	@NotEmpty
+	@Size(min = 4, max = 50)
+	@Column(nullable = false, unique = true, length = 50)
 	private String nombre;
 	
+	@NotEmpty
+	@Size(min = 4, max = 500)
+	@Column(nullable = false,length = 500)
 	private String descripcion;
-	
-	private Double precio;
-	
-	private Integer cantidad;
-	
-	@PositiveOrZero
-	@Column(precision = 2, scale = 2)
-	private Double descuento;
-	
-	private String observacion;
 	
 	private String foto;
 	
-	private String estado;
-	
-	@JsonIgnoreProperties(value={"productos", "hibernateLazyInitializer", "handler"}, allowSetters=true)
+	@JsonIgnoreProperties(value={"subCategorias", "hibernateLazyInitializer", "handler"}, allowSetters=true)
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "subcategoria_id",nullable = false)
-	private SubCategoria subCategoria;
-	
-	private boolean isActive;
+	@JoinColumn(name = "categoria_id",nullable = false)
+	private Categoria categoria;
+
+	@JsonIgnoreProperties(value={"subCategoria	", "hibernateLazyInitializer", "handler"}, allowSetters=true)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "subCategoria", cascade = CascadeType.ALL)
+	private List<Producto> productos;
 	
 	@Column(name = "create_at")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -69,7 +66,6 @@ public class Producto implements Serializable {
 	@PrePersist
 	public void prePersiste() {
 		this.createAt = new Date();
-		this.isActive = true;
 	}
 	
 	@PreUpdate
@@ -101,22 +97,6 @@ public class Producto implements Serializable {
 		this.descripcion = descripcion;
 	}
 
-	public Double getPrecio() {
-		return precio;
-	}
-
-	public void setPrecio(Double precio) {
-		this.precio = precio;
-	}
-
-	public String getObservacion() {
-		return observacion;
-	}
-
-	public void setObservacion(String observacion) {
-		this.observacion = observacion;
-	}
-
 	public String getFoto() {
 		return foto;
 	}
@@ -125,28 +105,20 @@ public class Producto implements Serializable {
 		this.foto = foto;
 	}
 
-	public Integer getCantidad() {
-		return cantidad;
+	public Categoria getCategoria() {
+		return categoria;
 	}
 
-	public void setCantidad(Integer cantidad) {
-		this.cantidad = cantidad;
+	public void setCategoria(Categoria categoria) {
+		this.categoria = categoria;
 	}
 
-	public boolean isActive() {
-		return isActive;
+	public List<Producto> getProductos() {
+		return productos;
 	}
 
-	public void setActive(boolean isActive) {
-		this.isActive = isActive;
-	}
-
-	public String getEstado() {
-		return estado;
-	}
-
-	public void setEstado(String estado) {
-		this.estado = estado;
+	public void setProductos(List<Producto> productos) {
+		this.productos = productos;
 	}
 
 	public Date getCreateAt() {
@@ -163,27 +135,6 @@ public class Producto implements Serializable {
 
 	public void setUpdateAt(Date updateAt) {
 		this.updateAt = updateAt;
-	}
-
-	public Double getDescuento() {
-		return descuento;
-	}
-
-	public void setDescuento(Double descuento) {
-		this.descuento = descuento;
-	}
-
-	public SubCategoria getSubCategoria() {
-		return subCategoria;
-	}
-
-	public void setSubCategoria(SubCategoria subCategoria) {
-		this.subCategoria = subCategoria;
-	}
-
-	public Double getPrecioFinal() {
-		String precioFinal = String.format(Locale.ROOT, "%.2f", precio-(precio*descuento/100));;
-		return Double.parseDouble(precioFinal);
 	}
 
 }

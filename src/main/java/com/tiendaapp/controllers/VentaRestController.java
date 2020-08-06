@@ -1,6 +1,7 @@
 package com.tiendaapp.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -16,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tiendaapp.models.entity.ItemVenta;
+import com.tiendaapp.models.entity.Producto;
 import com.tiendaapp.models.entity.Venta;
 import com.tiendaapp.models.services.ClienteService;
+import com.tiendaapp.models.services.ProductoService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,6 +30,9 @@ public class VentaRestController {
 	
 	@Autowired
 	private ClienteService clienteService;
+	
+	@Autowired
+	private ProductoService productoService;
 	
 	@GetMapping("/ventas/{id}")
 	public ResponseEntity<?> showVenta(@PathVariable Long id) {
@@ -50,10 +57,26 @@ public class VentaRestController {
 	public ResponseEntity<?> createVenta(@RequestBody Venta venta) {
 		Map<String, Object> response = new HashMap<>();
 		try {
+			List<ItemVenta> items = venta.getItems();
+			for (int i = 0; i < items.size(); i++) {
+				Optional<Producto> stockProducto = productoService.findById(items.get(i).getProducto().getId());
+				if (items.get(i).getCantidad() > stockProducto.get().getCantidad()) {
+					response.put("msg", "Producto: " + items.get(i).getProducto().getNombre());
+					response.put("det", " No hay stock suficiente");
+					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+				} else {
+					Integer newCantidadP = stockProducto.get().getCantidad() - items.get(i).getCantidad();
+					if (newCantidadP == 0) {
+						stockProducto.get().setEstado("AGOTADO");
+					}
+					stockProducto.get().setCantidad(newCantidadP);
+					productoService.save(stockProducto.get());
+				}
+			}
 			Venta newVenta = clienteService.saveVenta(venta);
 			return new ResponseEntity<Venta>(newVenta, HttpStatus.CREATED);
 		} catch (Exception e) {
-			response.put("message", "Error ");
+			response.put("message", e.getMessage());
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

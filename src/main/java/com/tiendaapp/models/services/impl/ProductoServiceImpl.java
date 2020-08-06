@@ -9,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tiendaapp.models.entity.Categoria;
 import com.tiendaapp.models.entity.Producto;
+import com.tiendaapp.models.entity.SubCategoria;
 import com.tiendaapp.models.entity.repository.ProductoRepository;
 import com.tiendaapp.models.services.ProductoService;
 
@@ -59,6 +61,35 @@ public class ProductoServiceImpl implements ProductoService {
 	@Override
 	public Page<Producto> findAll(Boolean term, Pageable pageable) {
 		return productoRepository.findAllByisActive(term, pageable);
+	}
+
+	@Transactional
+	@Override
+	public Page<Producto> findAllByEstado(String term, Pageable pageable) {
+		return productoRepository.findAllByEstado(term, pageable);
+	}
+
+	@Transactional
+	@Override
+	public List<Producto> findByNombreContainingIgnoreCaseAndByEstado(String term, String estado) {
+		return productoRepository.findByNombreContainingIgnoreCaseAndEstado(term, estado);
+	}
+
+	@Transactional
+	@Override
+	public Page<Producto> findByNombreContainingIgnoreCaseAndisActivePage(String term, Boolean term2,
+			Pageable pageable) {
+		return productoRepository.findByNombreContainingIgnoreCase(term, pageable);
+	}
+
+	@Override
+	public Page<Producto> findByNombreSubCategoria(SubCategoria subCategoria, Pageable pageable) {
+		return productoRepository.findBySubCategoria(subCategoria, pageable);
+	}
+
+	@Override
+	public Page<Producto> findByNombreCategoria(Categoria categoria, Pageable pageable) {
+		return productoRepository.findBySubCategoriaCategoria(categoria, pageable);
 	}
 
 }

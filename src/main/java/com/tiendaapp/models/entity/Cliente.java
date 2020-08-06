@@ -35,12 +35,13 @@ public class Cliente implements Serializable {
 	private Long id;
 	
 	@NotEmpty
-	@Size(min = 4, max = 12)
-	@Column(nullable = false,length = 100)
+	@Size(min = 4, max = 75)
+	@Column(nullable = false,length = 75)
 	private String nombre;
 	
 	@NotEmpty
-	@Column(length = 100)
+	@Size(min = 4, max = 75)
+	@Column(length = 75)
 	private String apellido;
 	
 	@Email
@@ -50,6 +51,7 @@ public class Cliente implements Serializable {
 	
 	private String telefono;
 	
+	@Size(min = 4, max = 60)
 	private String direccion;
 	
 	private String pais;
